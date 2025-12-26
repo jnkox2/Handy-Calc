@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimalist Calc</title>
+    <title>Stock & % Calc</title>
     <style>
         :root {
             --bg: #f8f9fa;
@@ -11,8 +11,8 @@
             --text: #333;
             --accent: #007bff;
             --border: #e0e0e0;
-            --red: #dc3545;
-            --green: #28a745;
+            --red: #d93025;
+            --green: #188038;
         }
 
         body {
@@ -24,37 +24,35 @@
             padding: 20px;
         }
 
-        .container {
-            width: 100%;
-            max-width: 500px;
-        }
+        .container { width: 100%; max-width: 480px; }
 
         .card {
             background: var(--card);
             padding: 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             margin-bottom: 1.5rem;
             border: 1px solid var(--border);
         }
 
         h2 {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             margin-top: 0;
             margin-bottom: 1.2rem;
             font-weight: 700;
-            color: #999;
+            color: #888;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.08em;
         }
 
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 1rem; }
         .input-group { margin-bottom: 1rem; }
 
         label {
             display: block;
             font-size: 0.75rem;
             margin-bottom: 0.4rem;
-            color: #888;
+            color: #666;
             font-weight: 600;
         }
 
@@ -71,19 +69,22 @@
 
         input:focus { border-color: var(--accent); background: #fff; }
 
-        .result-main {
-            margin-top: 1rem;
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--accent);
+        /* Function 1 Result Styling */
+        .result-container {
             text-align: center;
+            padding: 1rem;
+            background: #f1f3f4;
+            border-radius: 8px;
+            min-height: 50px;
         }
+        .pct-main { font-size: 1.4rem; font-weight: 800; }
+        .profit-sub { font-size: 1rem; margin-top: 4px; font-weight: 500; }
 
-        /* Layout for Function 2 side-by-side columns */
+        /* Function 2 Grid Styling */
         .grid-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 15px;
             margin-top: 1rem;
         }
 
@@ -94,55 +95,63 @@
             margin-bottom: 8px;
             text-transform: uppercase;
         }
-
-        .pos-label { color: var(--green); }
         .neg-label { color: var(--red); }
+        .pos-label { color: var(--green); }
 
         .grid-item {
             display: flex;
             justify-content: space-between;
-            padding: 6px 8px;
-            margin-bottom: 4px;
+            padding: 8px;
+            margin-bottom: 5px;
             background: #f8f9fa;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 0.85rem;
             font-variant-numeric: tabular-nums;
         }
-
-        .pct-label { color: #888; font-weight: 500; }
+        .pct-label { color: #888; font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="card">
-        <h2>Change Calculator</h2>
-        <div class="input-group">
-            <label>Initial Value</label>
-            <input type="number" id="f1-initial" placeholder="0" oninput="calculateChange()">
+        <h2>Stock Change Calculator</h2>
+        <div class="input-row">
+            <div class="input-group">
+                <label>Buy Price</label>
+                <input type="number" id="f1-initial" placeholder="0.00" oninput="calculateChange()">
+            </div>
+            <div class="input-group">
+                <label>Sell Price</label>
+                <input type="number" id="f1-final" placeholder="0.00" oninput="calculateChange()">
+            </div>
         </div>
         <div class="input-group">
-            <label>Final Value</label>
-            <input type="number" id="f1-final" placeholder="0" oninput="calculateChange()">
+            <label>Principal Investment (Optional)</label>
+            <input type="number" id="f1-principal" placeholder="e.g. 1000" oninput="calculateChange()">
         </div>
-        <div class="result-main" id="f1-result">0%</div>
+        
+        <div class="result-container" id="f1-res-box">
+            <div id="f1-pct" class="pct-main">0.00%</div>
+            <div id="f1-profit" class="profit-sub"></div>
+        </div>
     </div>
 
     <div class="card">
-        <h2>Quick Reference (1-10%)</h2>
+        <h2>Quick Targets (1-10%)</h2>
         <div class="input-group">
-            <label>Initial Value</label>
-            <input type="number" id="f2-initial" placeholder="Enter value..." oninput="calculateCommon()">
+            <label>Current Stock Price</label>
+            <input type="number" id="f2-initial" placeholder="Enter price..." oninput="calculateCommon()">
         </div>
         
         <div class="grid-container">
             <div>
-                <div class="column-label pos-label">Increase (+)</div>
-                <div id="pos-grid"></div>
-            </div>
-            <div>
                 <div class="column-label neg-label">Decrease (-)</div>
                 <div id="neg-grid"></div>
+            </div>
+            <div>
+                <div class="column-label pos-label">Increase (+)</div>
+                <div id="pos-grid"></div>
             </div>
         </div>
     </div>
@@ -152,16 +161,33 @@
     function calculateChange() {
         const initial = parseFloat(document.getElementById('f1-initial').value);
         const final = parseFloat(document.getElementById('f1-final').value);
-        const display = document.getElementById('f1-result');
+        const principal = parseFloat(document.getElementById('f1-principal').value);
+        
+        const pctDisplay = document.getElementById('f1-pct');
+        const profitDisplay = document.getElementById('f1-profit');
 
         if (initial && final) {
-            const change = ((final - initial) / initial) * 100;
-            const sign = change > 0 ? "+" : "";
-            display.innerText = `${sign}${change.toFixed(2)}%`;
-            display.style.color = change >= 0 ? "var(--green)" : "var(--red)";
+            const changePct = ((final - initial) / initial) * 100;
+            const sign = changePct > 0 ? "+" : "";
+            
+            // Set Color and Percent
+            const color = changePct >= 0 ? "var(--green)" : "var(--red)";
+            pctDisplay.innerText = `${sign}${changePct.toFixed(2)}%`;
+            pctDisplay.style.color = color;
+
+            // Optional Principal Logic
+            if (!isNaN(principal) && principal > 0) {
+                const profitAmount = (changePct / 100) * principal;
+                const pSign = profitAmount > 0 ? "+$" : "-$";
+                profitDisplay.innerText = `${pSign}${Math.abs(profitAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                profitDisplay.style.color = color;
+            } else {
+                profitDisplay.innerText = "";
+            }
         } else {
-            display.innerText = "0%";
-            display.style.color = "var(--accent)";
+            pctDisplay.innerText = "0.00%";
+            pctDisplay.style.color = "inherit";
+            profitDisplay.innerText = "";
         }
     }
 
@@ -175,20 +201,20 @@
 
         if (initial) {
             for (let i = 1; i <= 10; i++) {
-                // Positive calculations
-                const posVal = initial * (1 + i/100);
-                posGrid.innerHTML += `
-                    <div class="grid-item">
-                        <span class="pct-label">+${i}%</span>
-                        <span>${posVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                    </div>`;
-
-                // Negative calculations
+                // Negative (Left)
                 const negVal = initial * (1 - i/100);
                 negGrid.innerHTML += `
                     <div class="grid-item">
                         <span class="pct-label">-${i}%</span>
-                        <span>${negVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        <span>${negVal.toFixed(2)}</span>
+                    </div>`;
+
+                // Positive (Right)
+                const posVal = initial * (1 + i/100);
+                posGrid.innerHTML += `
+                    <div class="grid-item">
+                        <span class="pct-label">+${i}%</span>
+                        <span>${posVal.toFixed(2)}</span>
                     </div>`;
             }
         }
