@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock & % Calc</title>
+    <title>Stock Analysis Tool</title>
     <style>
         :root {
-            --bg: #f8f9fa;
+            --bg: #f0f2f5;
             --card: #ffffff;
-            --text: #333;
+            --text: #1c1e21;
             --accent: #007bff;
-            --border: #e0e0e0;
+            --border: #dddfe2;
             --red: #d93025;
             --green: #188038;
         }
@@ -22,17 +22,37 @@
             display: flex;
             justify-content: center;
             padding: 20px;
+            margin: 0;
         }
 
-        .container { width: 100%; max-width: 480px; }
+        /* The Horizontal Layout Container */
+        .main-layout {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            width: 100%;
+            max-width: 1100px;
+            align-items: flex-start;
+        }
+
+        /* Stacks vertically on mobile devices */
+        @media (max-width: 850px) {
+            .main-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
 
         .card {
             background: var(--card);
             padding: 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             border: 1px solid var(--border);
+            flex: 1; /* Makes both cards equal width */
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 520px; /* Keeps them visually balanced */
         }
 
         h2 {
@@ -40,108 +60,109 @@
             margin-top: 0;
             margin-bottom: 1.2rem;
             font-weight: 700;
-            color: #888;
+            color: #606770;
             text-transform: uppercase;
             letter-spacing: 0.08em;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
         }
 
-        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 1rem; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
         .input-group { margin-bottom: 1rem; }
 
         label {
             display: block;
             font-size: 0.75rem;
             margin-bottom: 0.4rem;
-            color: #666;
+            color: #606770;
             font-weight: 600;
         }
 
         input {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 1rem;
             box-sizing: border-box;
             outline: none;
-            background: #fafafa;
+            background: #f5f6f7;
         }
 
         input:focus { border-color: var(--accent); background: #fff; }
 
-        /* Function 1 Result Styling */
-        .result-container {
-            text-align: center;
-            padding: 1rem;
+        /* Results Styling */
+        .result-box {
             background: #f1f3f4;
+            padding: 1rem;
             border-radius: 8px;
-            min-height: 50px;
-        }
-        .pct-main { font-size: 1.4rem; font-weight: 800; }
-        .profit-sub { font-size: 1rem; margin-top: 4px; font-weight: 500; }
-
-        /* Function 2 Grid Styling */
-        .grid-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 1rem;
+            margin-top: 10px;
         }
 
-        .column-label {
-            font-size: 0.7rem;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-        .neg-label { color: var(--red); }
-        .pos-label { color: var(--green); }
-
-        .grid-item {
+        .res-line {
             display: flex;
             justify-content: space-between;
-            padding: 8px;
-            margin-bottom: 5px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-variant-numeric: tabular-nums;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
+
+        .rr-badge {
+            display: block;
+            text-align: center;
+            background: #1c1e21;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        /* Reference Grid (Function 2) */
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .column-label { font-size: 0.7rem; font-weight: bold; text-align: center; margin-bottom: 8px; text-transform: uppercase; }
+        .neg-label { color: var(--red); }
+        .pos-label { color: var(--green); }
+        .grid-item { display: flex; justify-content: space-between; padding: 6px 8px; margin-bottom: 4px; background: #f8f9fa; border-radius: 4px; font-size: 0.85rem; font-variant-numeric: tabular-nums; border: 1px solid #eee; }
         .pct-label { color: #888; font-weight: 600; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="main-layout">
+    
     <div class="card">
-        <h2>Stock Change Calculator</h2>
+        <h2>1. Trade Analysis (R:R)</h2>
+        <div class="input-group">
+            <label>Buy Price</label>
+            <input type="number" id="f1-buy" placeholder="0.00" oninput="calculateTrade()">
+        </div>
         <div class="input-row">
             <div class="input-group">
-                <label>Buy Price</label>
-                <input type="number" id="f1-initial" placeholder="0.00" oninput="calculateChange()">
+                <label>Sell 1 (Target)</label>
+                <input type="number" id="f1-sell1" placeholder="0.00" oninput="calculateTrade()">
             </div>
             <div class="input-group">
-                <label>Sell Price</label>
-                <input type="number" id="f1-final" placeholder="0.00" oninput="calculateChange()">
+                <label>Sell 2 (Stop)</label>
+                <input type="number" id="f1-sell2" placeholder="0.00" oninput="calculateTrade()">
             </div>
         </div>
         <div class="input-group">
             <label>Principal Investment (Optional)</label>
-            <input type="number" id="f1-principal" placeholder="e.g. 1000" oninput="calculateChange()">
+            <input type="number" id="f1-principal" placeholder="Amount..." oninput="calculateTrade()">
         </div>
         
-        <div class="result-container" id="f1-res-box">
-            <div id="f1-pct" class="pct-main">0.00%</div>
-            <div id="f1-profit" class="profit-sub"></div>
+        <div id="f1-results-area" style="display:none;">
+            <div class="result-box" id="f1-details"></div>
+            <div id="f1-rr-ratio"></div>
         </div>
     </div>
 
     <div class="card">
-        <h2>Quick Targets (1-10%)</h2>
+        <h2>2. Quick Target Grid</h2>
         <div class="input-group">
-            <label>Current Stock Price</label>
-            <input type="number" id="f2-initial" placeholder="Enter price..." oninput="calculateCommon()">
+            <label>Current Price</label>
+            <input type="number" id="f2-initial" placeholder="Enter stock price..." oninput="calculateCommon()">
         </div>
         
         <div class="grid-container">
@@ -155,67 +176,60 @@
             </div>
         </div>
     </div>
+
 </div>
 
 <script>
-    function calculateChange() {
-        const initial = parseFloat(document.getElementById('f1-initial').value);
-        const final = parseFloat(document.getElementById('f1-final').value);
+    function calculateTrade() {
+        const buy = parseFloat(document.getElementById('f1-buy').value);
+        const s1 = parseFloat(document.getElementById('f1-sell1').value);
+        const s2 = parseFloat(document.getElementById('f1-sell2').value);
         const principal = parseFloat(document.getElementById('f1-principal').value);
+        const area = document.getElementById('f1-results-area');
+        const details = document.getElementById('f1-details');
+        const rrDiv = document.getElementById('f1-rr-ratio');
+
+        if (!buy || (!s1 && !s2)) { area.style.display = "none"; return; }
+        area.style.display = "block";
+        let html = "";
         
-        const pctDisplay = document.getElementById('f1-pct');
-        const profitDisplay = document.getElementById('f1-profit');
+        const getStats = (sell) => {
+            const diff = sell - buy;
+            const pct = (diff / buy) * 100;
+            const color = diff >= 0 ? "var(--green)" : "var(--red)";
+            const pVal = !isNaN(principal) ? (pct/100 * principal) : null;
+            return { pct: pct.toFixed(2), cash: pVal, color: color };
+        };
 
-        if (initial && final) {
-            const changePct = ((final - initial) / initial) * 100;
-            const sign = changePct > 0 ? "+" : "";
-            
-            // Set Color and Percent
-            const color = changePct >= 0 ? "var(--green)" : "var(--red)";
-            pctDisplay.innerText = `${sign}${changePct.toFixed(2)}%`;
-            pctDisplay.style.color = color;
-
-            // Optional Principal Logic
-            if (!isNaN(principal) && principal > 0) {
-                const profitAmount = (changePct / 100) * principal;
-                const pSign = profitAmount > 0 ? "+$" : "-$";
-                profitDisplay.innerText = `${pSign}${Math.abs(profitAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-                profitDisplay.style.color = color;
-            } else {
-                profitDisplay.innerText = "";
+        [s1, s2].forEach((s, i) => {
+            if (s) {
+                const res = getStats(s);
+                html += `<div class="res-line" style="color:${res.color}">
+                            <span>Sell ${i+1}: ${res.pct}%</span>
+                            <span>${res.cash !== null ? '$' + res.cash.toLocaleString(undefined, {minimumFractionDigits:2}) : ''}</span>
+                         </div>`;
             }
-        } else {
-            pctDisplay.innerText = "0.00%";
-            pctDisplay.style.color = "inherit";
-            profitDisplay.innerText = "";
-        }
+        });
+        details.innerHTML = html;
+
+        if (buy && s1 && s2) {
+            const high = Math.max(s1, s2);
+            const low = Math.min(s1, s2);
+            if (high > buy && low < buy) {
+                rrDiv.innerHTML = `<div class="rr-badge">RISK/REWARD 1 : ${((high - buy) / (buy - low)).toFixed(2)}</div>`;
+            } else { rrDiv.innerHTML = ""; }
+        } else { rrDiv.innerHTML = ""; }
     }
 
     function calculateCommon() {
         const initial = parseFloat(document.getElementById('f2-initial').value);
         const posGrid = document.getElementById('pos-grid');
         const negGrid = document.getElementById('neg-grid');
-        
-        posGrid.innerHTML = ""; 
-        negGrid.innerHTML = "";
-
+        posGrid.innerHTML = ""; negGrid.innerHTML = "";
         if (initial) {
             for (let i = 1; i <= 10; i++) {
-                // Negative (Left)
-                const negVal = initial * (1 - i/100);
-                negGrid.innerHTML += `
-                    <div class="grid-item">
-                        <span class="pct-label">-${i}%</span>
-                        <span>${negVal.toFixed(2)}</span>
-                    </div>`;
-
-                // Positive (Right)
-                const posVal = initial * (1 + i/100);
-                posGrid.innerHTML += `
-                    <div class="grid-item">
-                        <span class="pct-label">+${i}%</span>
-                        <span>${posVal.toFixed(2)}</span>
-                    </div>`;
+                negGrid.innerHTML += `<div class="grid-item"><span class="pct-label">-${i}%</span><span>${(initial * (1 - i/100)).toFixed(2)}</span></div>`;
+                posGrid.innerHTML += `<div class="grid-item"><span class="pct-label">+${i}%</span><span>${(initial * (1 + i/100)).toFixed(2)}</span></div>`;
             }
         }
     }
