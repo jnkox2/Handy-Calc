@@ -3,235 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Analysis Tool</title>
+    <title>Stock Price Calculator</title>
     <style>
         :root {
-            --bg: #f0f2f5;
+            /* Bright, Delighting Palette */
+            --bg: #f8faff; /* Soft arctic blue-white */
             --card: #ffffff;
-            --text: #1c1e21;
-            --accent: #007bff;
-            --border: #dddfe2;
-            --red: #d93025;
-            --green: #188038;
+            --text-main: #1e293b; /* Deep slate for readability */
+            --text-sub: #64748b; /* Soft blue-gray */
+            --accent: #6366f1; /* Vibrant Indigo */
+            --border: #e2e8f0;
+            --green: #10b981; /* Fresh Emerald */
+            --red: #f43f5e; /* Rose Coral */
+            --shadow: rgba(99, 102, 241, 0.08);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--bg);
-            color: var(--text);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
-            padding: 20px;
+            padding: 24px 16px;
             margin: 0;
+            line-height: 1.5;
         }
 
-        /* The Horizontal Layout Container */
-        .main-layout {
-            display: flex;
-            flex-direction: row;
-            gap: 20px;
-            width: 100%;
-            max-width: 1100px;
-            align-items: flex-start;
-        }
-
-        /* Stacks vertically on mobile devices */
-        @media (max-width: 850px) {
-            .main-layout {
-                flex-direction: column;
-                align-items: center;
-            }
-        }
+        .container { width: 100%; max-width: 460px; }
 
         .card {
             background: var(--card);
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border: 1px solid var(--border);
-            flex: 1; /* Makes both cards equal width */
-            width: 100%;
-            box-sizing: border-box;
-            min-height: 520px; /* Keeps them visually balanced */
+            padding: 1.8rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px var(--shadow), 0 8px 10px -6px var(--shadow);
+            margin-bottom: 1.5rem;
+            border: 1px solid #fff;
         }
 
         h2 {
-            font-size: 0.85rem;
-            margin-top: 0;
-            margin-bottom: 1.2rem;
-            font-weight: 700;
-            color: #606770;
+            font-size: 0.75rem;
+            margin: 0 0 1.5rem 0;
+            font-weight: 800;
+            color: var(--accent);
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 10px;
+            letter-spacing: 0.12em;
+            display: flex;
+            align-items: center;
         }
 
-        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
-        .input-group { margin-bottom: 1rem; }
+        h2::before {
+            content: "";
+            width: 4px;
+            height: 16px;
+            background: var(--accent);
+            margin-right: 10px;
+            border-radius: 4px;
+        }
+
+        .input-group { margin-bottom: 1.2rem; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
         label {
             display: block;
-            font-size: 0.75rem;
-            margin-bottom: 0.4rem;
-            color: #606770;
-            font-weight: 600;
+            font-size: 0.7rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-sub);
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
         input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
             font-size: 1rem;
             box-sizing: border-box;
             outline: none;
-            background: #f5f6f7;
+            background: #fff;
+            transition: all 0.2s ease;
+            color: var(--text-main);
+            font-weight: 500;
         }
 
-        input:focus { border-color: var(--accent); background: #fff; }
-
-        /* Results Styling */
-        .result-box {
-            background: #f1f3f4;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-top: 10px;
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
 
-        .res-line {
+        /* Results Display */
+        .stats-card {
+            background: #fdfdff;
+            padding: 1.2rem;
+            border-radius: 16px;
+            border: 2px dashed var(--border);
+            margin-top: 5px;
+        }
+
+        .stat-line {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            font-weight: 600;
+            align-items: center;
+            padding: 8px 0;
+            font-weight: 700;
         }
 
         .rr-badge {
-            display: block;
             text-align: center;
-            background: #1c1e21;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
             color: white;
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 10px;
-            font-weight: 700;
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 15px;
+            font-weight: 800;
             font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
 
-        /* Reference Grid (Function 2) */
-        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .column-label { font-size: 0.7rem; font-weight: bold; text-align: center; margin-bottom: 8px; text-transform: uppercase; }
-        .neg-label { color: var(--red); }
-        .pos-label { color: var(--green); }
-        .grid-item { display: flex; justify-content: space-between; padding: 6px 8px; margin-bottom: 4px; background: #f8f9fa; border-radius: 4px; font-size: 0.85rem; font-variant-numeric: tabular-nums; border: 1px solid #eee; }
-        .pct-label { color: #888; font-weight: 600; }
+        /* Grid Styling */
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .col-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 4px;
+            border-radius: 6px;
+        }
+
+        .grid-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background: #fff;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-variant-numeric: tabular-nums;
+            border: 1px solid var(--border);
+            transition: transform 0.1s ease;
+        }
+
+        .grid-item:hover { transform: scale(1.02); border-color: var(--accent); }
+        .pct-label { color: var(--text-sub); font-weight: 600; font-size: 0.75rem; }
     </style>
 </head>
 <body>
 
-<div class="main-layout">
-    
+<div class="container">
     <div class="card">
-        <h2>1. Trade Analysis (R:R)</h2>
+        <h2>Trade Setup</h2>
         <div class="input-group">
             <label>Buy Price</label>
-            <input type="number" id="f1-buy" placeholder="0.00" oninput="calculateTrade()">
+            <input type="number" id="buy" placeholder="0.00" oninput="run()">
         </div>
         <div class="input-row">
             <div class="input-group">
                 <label>Sell 1 (Target)</label>
-                <input type="number" id="f1-sell1" placeholder="0.00" oninput="calculateTrade()">
+                <input type="number" id="s1" placeholder="0.00" oninput="run()">
             </div>
             <div class="input-group">
                 <label>Sell 2 (Stop)</label>
-                <input type="number" id="f1-sell2" placeholder="0.00" oninput="calculateTrade()">
+                <input type="number" id="s2" placeholder="0.00" oninput="run()">
             </div>
         </div>
-        <div class="input-group">
-            <label>Principal Investment (Optional)</label>
-            <input type="number" id="f1-principal" placeholder="Amount..." oninput="calculateTrade()">
-        </div>
-        
-        <div id="f1-results-area" style="display:none;">
-            <div class="result-box" id="f1-details"></div>
-            <div id="f1-rr-ratio"></div>
+        <div class="input-group" style="margin-bottom:0">
+            <label>Principal Investment</label>
+            <input type="number" id="prin" placeholder="Optional" oninput="run()">
         </div>
     </div>
 
-    <div class="card">
-        <h2>2. Quick Target Grid</h2>
-        <div class="input-group">
-            <label>Current Price</label>
-            <input type="number" id="f2-initial" placeholder="Enter stock price..." oninput="calculateCommon()">
-        </div>
-        
+    <div class="card" id="analysis-card" style="display:none;">
+        <h2>Analysis</h2>
+        <div class="stats-card" id="stats-box"></div>
+        <div id="rr-box"></div>
+    </div>
+
+    <div class="card" id="grid-card" style="display:none;">
+        <h2>Reference Targets</h2>
         <div class="grid-container">
             <div>
-                <div class="column-label neg-label">Decrease (-)</div>
+                <div class="col-label" style="background:#fff1f2; color:var(--red);">Loss (-)</div>
                 <div id="neg-grid"></div>
             </div>
             <div>
-                <div class="column-label pos-label">Increase (+)</div>
+                <div class="col-label" style="background:#ecfdf5; color:var(--green);">Gain (+)</div>
                 <div id="pos-grid"></div>
             </div>
         </div>
     </div>
-
 </div>
 
 <script>
-    function calculateTrade() {
-        const buy = parseFloat(document.getElementById('f1-buy').value);
-        const s1 = parseFloat(document.getElementById('f1-sell1').value);
-        const s2 = parseFloat(document.getElementById('f1-sell2').value);
-        const principal = parseFloat(document.getElementById('f1-principal').value);
-        const area = document.getElementById('f1-results-area');
-        const details = document.getElementById('f1-details');
-        const rrDiv = document.getElementById('f1-rr-ratio');
+    function run() {
+        const buy = parseFloat(document.getElementById('buy').value);
+        const s1 = parseFloat(document.getElementById('s1').value);
+        const s2 = parseFloat(document.getElementById('s2').value);
+        const prin = parseFloat(document.getElementById('prin').value);
 
-        if (!buy || (!s1 && !s2)) { area.style.display = "none"; return; }
-        area.style.display = "block";
-        let html = "";
-        
-        const getStats = (sell) => {
-            const diff = sell - buy;
-            const pct = (diff / buy) * 100;
-            const color = diff >= 0 ? "var(--green)" : "var(--red)";
-            const pVal = !isNaN(principal) ? (pct/100 * principal) : null;
-            return { pct: pct.toFixed(2), cash: pVal, color: color };
-        };
-
-        [s1, s2].forEach((s, i) => {
-            if (s) {
-                const res = getStats(s);
-                html += `<div class="res-line" style="color:${res.color}">
-                            <span>Sell ${i+1}: ${res.pct}%</span>
-                            <span>${res.cash !== null ? '$' + res.cash.toLocaleString(undefined, {minimumFractionDigits:2}) : ''}</span>
-                         </div>`;
-            }
-        });
-        details.innerHTML = html;
-
-        if (buy && s1 && s2) {
-            const high = Math.max(s1, s2);
-            const low = Math.min(s1, s2);
-            if (high > buy && low < buy) {
-                rrDiv.innerHTML = `<div class="rr-badge">RISK/REWARD 1 : ${((high - buy) / (buy - low)).toFixed(2)}</div>`;
-            } else { rrDiv.innerHTML = ""; }
-        } else { rrDiv.innerHTML = ""; }
-    }
-
-    function calculateCommon() {
-        const initial = parseFloat(document.getElementById('f2-initial').value);
-        const posGrid = document.getElementById('pos-grid');
-        const negGrid = document.getElementById('neg-grid');
-        posGrid.innerHTML = ""; negGrid.innerHTML = "";
-        if (initial) {
+        // 1. Grid Logic
+        const gCard = document.getElementById('grid-card');
+        if (buy > 0) {
+            gCard.style.display = "block";
+            let p = "", n = "";
             for (let i = 1; i <= 10; i++) {
-                negGrid.innerHTML += `<div class="grid-item"><span class="pct-label">-${i}%</span><span>${(initial * (1 - i/100)).toFixed(2)}</span></div>`;
-                posGrid.innerHTML += `<div class="grid-item"><span class="pct-label">+${i}%</span><span>${(initial * (1 + i/100)).toFixed(2)}</span></div>`;
+                n += `<div class="grid-item"><span class="pct-label">-${i}%</span><span style="color:var(--red); font-weight:700">${(buy * (1-i/100)).toFixed(2)}</span></div>`;
+                p += `<div class="grid-item"><span class="pct-label">+${i}%</span><span style="color:var(--green); font-weight:700">${(buy * (1+i/100)).toFixed(2)}</span></div>`;
             }
-        }
+            document.getElementById('pos-grid').innerHTML = p;
+            document.getElementById('neg-grid').innerHTML = n;
+        } else { gCard.style.display = "none"; }
+
+        // 2. Stats Logic
+        const aCard = document.getElementById('analysis-card');
+        const sBox = document.getElementById('stats-box');
+        const rrBox = document.getElementById('rr-box');
+
+        if (buy > 0 && (s1 > 0 || s2 > 0)) {
+            aCard.style.display = "block";
+            let h = "";
+            [s1, s2].forEach((s, i) => {
+                if (s > 0) {
+                    const diff = s - buy;
+                    const pct = ((diff/buy)*100).toFixed(2);
+                    const color = diff >= 0 ? "var(--green)" : "var(--red)";
+                    const cash = !isNaN(prin) ? (diff/buy * prin).toLocaleString(undefined, {minimumFractionDigits:2}) : null;
+                    h += `<div class="stat-line">
+                            <span style="color:var(--text-sub); font-size:0.75rem;">SELL ${i+1}</span>
+                            <span style="color:${color}">${pct}%</span>
+                            <span>${cash ? '$'+cash : ''}</span>
+                          </div>`;
+                }
+            });
+            sBox.innerHTML = h;
+
+            if (s1 > 0 && s2 > 0) {
+                const hi = Math.max(s1, s2), lo = Math.min(s1, s2);
+                if (hi > buy && lo < buy) {
+                    rrBox.innerHTML = `<div class="rr-badge">RISK/REWARD 1 : ${((hi-buy)/(buy-lo)).toFixed(2)}</div>`;
+                } else { rrBox.innerHTML = ""; }
+            } else { rrBox.innerHTML = ""; }
+        } else { aCard.style.display = "none"; }
     }
 </script>
 
