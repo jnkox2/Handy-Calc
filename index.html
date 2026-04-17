@@ -139,19 +139,21 @@
             font-variant-numeric: tabular-nums;
             border: 1px solid var(--border);
             transition: transform 0.1s ease;
+            cursor: pointer;
         }
 
         .grid-item:hover { transform: scale(1.02); border-color: var(--accent); }
         .pct-label { color: var(--text-sub); font-weight: 600; font-size: 0.75rem; }
     </style>
 </head>
+
 <body>
 
 <div class="container">
+
     <div class="card">
         <h2>Trade Setup</h2>
 
-        <!-- UPDATED SECTION WITH CLEAR BUTTON -->
         <div class="input-group">
             <label>Buy Price</label>
             <div style="display:flex; gap:8px;">
@@ -181,7 +183,7 @@
 
         <div class="input-group" style="margin-bottom:0">
             <label>Principal Investment</label>
-            <input type="number" id="prin" placeholder="Optional" oninput="run()">
+            <input type="number" id="prin" value="3000" placeholder="3000" oninput="run()">
         </div>
     </div>
 
@@ -204,6 +206,7 @@
             </div>
         </div>
     </div>
+
 </div>
 
 <script>
@@ -214,16 +217,30 @@
         const prin = parseFloat(document.getElementById('prin').value);
 
         const gCard = document.getElementById('grid-card');
+
         if (buy > 0) {
             gCard.style.display = "block";
+
             let p = "", n = "";
+
             for (let i = 1; i <= 10; i++) {
-                n += `<div class="grid-item"><span class="pct-label">-${i}%</span><span style="color:var(--red); font-weight:700">${(buy * (1-i/100)).toFixed(2)}</span></div>`;
-                p += `<div class="grid-item"><span class="pct-label">+${i}%</span><span style="color:var(--green); font-weight:700">${(buy * (1+i/100)).toFixed(2)}</span></div>`;
+                n += `<div class="grid-item" onclick="applyPct(-${i})">
+                        <span class="pct-label">-${i}%</span>
+                        <span style="color:var(--red); font-weight:700">${(buy * (1-i/100)).toFixed(2)}</span>
+                      </div>`;
+
+                p += `<div class="grid-item" onclick="applyPct(${i})">
+                        <span class="pct-label">+${i}%</span>
+                        <span style="color:var(--green); font-weight:700">${(buy * (1+i/100)).toFixed(2)}</span>
+                      </div>`;
             }
-            document.getElementById('pos-grid').innerHTML = p;
+
             document.getElementById('neg-grid').innerHTML = n;
-        } else { gCard.style.display = "none"; }
+            document.getElementById('pos-grid').innerHTML = p;
+
+        } else {
+            gCard.style.display = "none";
+        }
 
         const aCard = document.getElementById('analysis-card');
         const sBox = document.getElementById('stats-box');
@@ -231,13 +248,18 @@
 
         if (buy > 0 && (s1 > 0 || s2 > 0)) {
             aCard.style.display = "block";
+
             let h = "";
+
             [s1, s2].forEach((s, i) => {
                 if (s > 0) {
                     const diff = s - buy;
                     const pct = ((diff/buy)*100).toFixed(2);
                     const color = diff >= 0 ? "var(--green)" : "var(--red)";
-                    const cash = !isNaN(prin) ? (diff/buy * prin).toLocaleString(undefined, {minimumFractionDigits:2}) : null;
+                    const cash = !isNaN(prin)
+                        ? (diff/buy * prin).toLocaleString(undefined, {minimumFractionDigits:2})
+                        : null;
+
                     h += `<div class="stat-line">
                             <span style="color:var(--text-sub); font-size:0.75rem;">SELL ${i+1}</span>
                             <span style="color:${color}">${pct}%</span>
@@ -245,23 +267,46 @@
                           </div>`;
                 }
             });
+
             sBox.innerHTML = h;
 
             if (s1 > 0 && s2 > 0) {
                 const hi = Math.max(s1, s2), lo = Math.min(s1, s2);
                 if (hi > buy && lo < buy) {
-                    rrBox.innerHTML = `<div class="rr-badge">RISK/REWARD 1 : ${((hi-buy)/(buy-lo)).toFixed(2)}</div>`;
-                } else { rrBox.innerHTML = ""; }
-            } else { rrBox.innerHTML = ""; }
-        } else { aCard.style.display = "none"; }
+                    rrBox.innerHTML =
+                        `<div class="rr-badge">RISK/REWARD 1 : ${((hi-buy)/(buy-lo)).toFixed(2)}</div>`;
+                } else {
+                    rrBox.innerHTML = "";
+                }
+            } else {
+                rrBox.innerHTML = "";
+            }
+
+        } else {
+            aCard.style.display = "none";
+        }
     }
 
-    // NEW FUNCTION
+    function applyPct(pct) {
+        const buy = parseFloat(document.getElementById('buy').value);
+        if (!buy) return;
+
+        const value = (buy * (1 + pct / 100)).toFixed(2);
+
+        if (pct < 0) {
+            document.getElementById('s1').value = value;
+        } else {
+            document.getElementById('s2').value = value;
+        }
+
+        run();
+    }
+
     function clearInputs() {
         document.getElementById('buy').value = '';
         document.getElementById('s1').value = '';
         document.getElementById('s2').value = '';
-        document.getElementById('prin').value = '';
+        document.getElementById('prin').value = '3000';
         run();
     }
 </script>
