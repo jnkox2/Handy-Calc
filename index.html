@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Stock Price Calculator</title>
+
     <style>
         :root {
             --bg: #f8faff;
@@ -17,25 +18,48 @@
             --shadow: rgba(99, 102, 241, 0.08);
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--bg);
             color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            padding: 24px 16px;
             margin: 0;
+            padding: 24px;
             line-height: 1.5;
         }
 
-        .container { width: 100%; max-width: 460px; }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 24px;
+
+            align-items: start;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .right-panel {
+            min-width: 0;
+        }
 
         .card {
             background: var(--card);
             padding: 1.8rem;
             border-radius: 20px;
-            box-shadow: 0 10px 25px -5px var(--shadow), 0 8px 10px -6px var(--shadow);
-            margin-bottom: 1.5rem;
+            box-shadow:
+                0 10px 25px -5px var(--shadow),
+                0 8px 10px -6px var(--shadow);
             border: 1px solid #fff;
         }
 
@@ -59,8 +83,15 @@
             border-radius: 4px;
         }
 
-        .input-group { margin-bottom: 1.2rem; }
-        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
 
         label {
             display: block;
@@ -77,7 +108,6 @@
             border: 2px solid var(--border);
             border-radius: 12px;
             font-size: 1rem;
-            box-sizing: border-box;
             outline: none;
             background: #fff;
             transition: all 0.2s ease;
@@ -88,6 +118,22 @@
         input:focus {
             border-color: var(--accent);
             box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        button {
+            padding: 0 14px;
+            border-radius: 10px;
+            border: 2px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--text-sub);
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            border-color: var(--accent);
+            color: var(--accent);
         }
 
         .stats-card {
@@ -118,19 +164,25 @@
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
 
-        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
         .col-label {
             font-size: 0.65rem;
             font-weight: 800;
             text-align: center;
             margin-bottom: 10px;
-            padding: 4px;
-            border-radius: 6px;
+            padding: 6px;
+            border-radius: 8px;
         }
 
         .grid-item {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             padding: 10px 12px;
             margin-bottom: 8px;
             background: #fff;
@@ -138,12 +190,53 @@
             font-size: 0.85rem;
             font-variant-numeric: tabular-nums;
             border: 1px solid var(--border);
-            transition: transform 0.1s ease;
+            transition: all 0.1s ease;
             cursor: pointer;
+            gap: 10px;
         }
 
-        .grid-item:hover { transform: scale(1.02); border-color: var(--accent); }
-        .pct-label { color: var(--text-sub); font-weight: 600; font-size: 0.75rem; }
+        .grid-item:hover {
+            transform: scale(1.01);
+            border-color: var(--accent);
+        }
+
+        .grid-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .pct-label {
+            color: var(--text-sub);
+            font-weight: 700;
+            font-size: 0.75rem;
+            min-width: 38px;
+        }
+
+        .cash-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .price-label {
+            font-weight: 800;
+            font-size: 0.9rem;
+            margin-left: auto;
+        }
+
+        @media (max-width: 900px) {
+
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .right-panel {
+                width: 100%;
+            }
+
+        }
     </style>
 </head>
 
@@ -151,164 +244,444 @@
 
 <div class="container">
 
-    <div class="card">
-        <h2>Trade Setup</h2>
+    <!-- LEFT SIDE -->
+    <div class="left-panel">
 
-        <div class="input-group">
-            <label>Buy Price</label>
-            <div style="display:flex; gap:8px;">
-                <input type="number" id="buy" placeholder="0.00" oninput="run()">
-                <button onclick="clearInputs()" style="
-                    padding: 0 14px;
-                    border-radius: 10px;
-                    border: 2px solid var(--border);
-                    background: #fff;
-                    cursor: pointer;
-                    font-weight: 700;
-                    color: var(--text-sub);
-                ">Clear</button>
-            </div>
-        </div>
+        <!-- TRADE SETUP -->
+        <div class="card">
 
-        <div class="input-row">
+            <h2>Trade Setup</h2>
+
             <div class="input-group">
-                <label>Sell 1 (Target)</label>
-                <input type="number" id="s1" placeholder="0.00" oninput="run()">
+
+                <label>Buy Price</label>
+
+                <div style="display:flex; gap:8px;">
+
+                    <input
+                        type="number"
+                        id="buy"
+                        placeholder="0.00"
+                        oninput="run()">
+
+                    <button onclick="clearInputs()">
+                        Clear
+                    </button>
+
+                </div>
+
             </div>
-            <div class="input-group">
-                <label>Sell 2 (Stop)</label>
-                <input type="number" id="s2" placeholder="0.00" oninput="run()">
+
+            <div class="input-row">
+
+                <div class="input-group">
+
+                    <label>Sell 1 (Target)</label>
+
+                    <input
+                        type="number"
+                        id="s1"
+                        placeholder="0.00"
+                        oninput="run()">
+
+                </div>
+
+                <div class="input-group">
+
+                    <label>Sell 2 (Stop)</label>
+
+                    <input
+                        type="number"
+                        id="s2"
+                        placeholder="0.00"
+                        oninput="run()">
+
+                </div>
+
             </div>
+
+            <div class="input-group" style="margin-bottom:0;">
+
+                <label>Principal Investment</label>
+
+                <input
+                    type="number"
+                    id="prin"
+                    value="3000"
+                    step="500"
+                    min="0"
+                    placeholder="3000"
+                    oninput="run()">
+
+            </div>
+
         </div>
 
-        <div class="input-group" style="margin-bottom:0">
-            <label>Principal Investment</label>
-            <input type="number" id="prin" value="3000" placeholder="3000" oninput="run()">
+        <!-- ANALYSIS -->
+        <div
+            class="card"
+            id="analysis-card"
+            style="display:none;">
+
+            <h2>Analysis</h2>
+
+            <div class="stats-card" id="stats-box"></div>
+
+            <div id="rr-box"></div>
+
         </div>
+
     </div>
 
-    <div class="card" id="analysis-card" style="display:none;">
-        <h2>Analysis</h2>
-        <div class="stats-card" id="stats-box"></div>
-        <div id="rr-box"></div>
-    </div>
+    <!-- RIGHT SIDE -->
+    <div class="right-panel">
 
-    <div class="card" id="grid-card" style="display:none;">
-        <h2>Reference Targets</h2>
-        <div class="grid-container">
-            <div>
-                <div class="col-label" style="background:#fff1f2; color:var(--red);">Loss (-)</div>
-                <div id="neg-grid"></div>
+        <!-- REFERENCE TARGETS -->
+        <div
+            class="card"
+            id="grid-card"
+            style="display:none;">
+
+            <h2>Reference Targets</h2>
+
+            <div class="grid-container">
+
+                <!-- LOSS COLUMN -->
+                <div>
+
+                    <div
+                        class="col-label"
+                        style="background:#fff1f2; color:var(--red);">
+
+                        Loss (-)
+
+                    </div>
+
+                    <div id="neg-grid"></div>
+
+                </div>
+
+                <!-- GAIN COLUMN -->
+                <div>
+
+                    <div
+                        class="col-label"
+                        style="background:#ecfdf5; color:var(--green);">
+
+                        Gain (+)
+
+                    </div>
+
+                    <div id="pos-grid"></div>
+
+                </div>
+
             </div>
-            <div>
-                <div class="col-label" style="background:#ecfdf5; color:var(--green);">Gain (+)</div>
-                <div id="pos-grid"></div>
-            </div>
+
         </div>
+
     </div>
 
 </div>
 
 <script>
-    function run() {
-        const buy = parseFloat(document.getElementById('buy').value);
-        const s1 = parseFloat(document.getElementById('s1').value);
-        const s2 = parseFloat(document.getElementById('s2').value);
-        const prin = parseFloat(document.getElementById('prin').value);
 
-        const gCard = document.getElementById('grid-card');
+    function formatMoney(value) {
+
+        return '$' + Number(value).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+    }
+
+    function run() {
+
+        const buy =
+            parseFloat(document.getElementById('buy').value);
+
+        const s1 =
+            parseFloat(document.getElementById('s1').value);
+
+        const s2 =
+            parseFloat(document.getElementById('s2').value);
+
+        const prin =
+            parseFloat(document.getElementById('prin').value);
+
+        const gCard =
+            document.getElementById('grid-card');
+
+        /*
+        ==========================================
+        REFERENCE TARGETS
+        ==========================================
+        */
 
         if (buy > 0) {
+
             gCard.style.display = "block";
 
-            let p = "", n = "";
+            let p = "";
+            let n = "";
 
             for (let i = 1; i <= 10; i++) {
-                n += `<div class="grid-item" onclick="applyPct(-${i})">
-                        <span class="pct-label">-${i}%</span>
-                        <span style="color:var(--red); font-weight:700">${(buy * (1-i/100)).toFixed(2)}</span>
-                      </div>`;
 
-                p += `<div class="grid-item" onclick="applyPct(${i})">
-                        <span class="pct-label">+${i}%</span>
-                        <span style="color:var(--green); font-weight:700">${(buy * (1+i/100)).toFixed(2)}</span>
-                      </div>`;
+                const negPrice =
+                    buy * (1 - i / 100);
+
+                const posPrice =
+                    buy * (1 + i / 100);
+
+                const negCash =
+                    ((negPrice - buy) / buy) * prin;
+
+                const posCash =
+                    ((posPrice - buy) / buy) * prin;
+
+                /*
+                NEGATIVE
+                */
+
+                n += `
+                    <div
+                        class="grid-item"
+                        onclick="applyPct(-${i})">
+
+                        <div class="grid-left">
+
+                            <div class="pct-label">
+                                -${i}%
+                            </div>
+
+                            <div
+                                class="cash-label"
+                                style="color:var(--red);">
+
+                                ${formatMoney(negCash)}
+
+                            </div>
+
+                        </div>
+
+                        <div
+                            class="price-label"
+                            style="color:var(--red);">
+
+                            ${negPrice.toFixed(2)}
+
+                        </div>
+
+                    </div>
+                `;
+
+                /*
+                POSITIVE
+                */
+
+                p += `
+                    <div
+                        class="grid-item"
+                        onclick="applyPct(${i})">
+
+                        <div class="grid-left">
+
+                            <div class="pct-label">
+                                +${i}%
+                            </div>
+
+                            <div
+                                class="cash-label"
+                                style="color:var(--green);">
+
+                                +${formatMoney(posCash)}
+
+                            </div>
+
+                        </div>
+
+                        <div
+                            class="price-label"
+                            style="color:var(--green);">
+
+                            ${posPrice.toFixed(2)}
+
+                        </div>
+
+                    </div>
+                `;
             }
 
             document.getElementById('neg-grid').innerHTML = n;
             document.getElementById('pos-grid').innerHTML = p;
 
         } else {
+
             gCard.style.display = "none";
+
         }
 
-        const aCard = document.getElementById('analysis-card');
-        const sBox = document.getElementById('stats-box');
-        const rrBox = document.getElementById('rr-box');
+        /*
+        ==========================================
+        ANALYSIS
+        ==========================================
+        */
+
+        const aCard =
+            document.getElementById('analysis-card');
+
+        const sBox =
+            document.getElementById('stats-box');
+
+        const rrBox =
+            document.getElementById('rr-box');
 
         if (buy > 0 && (s1 > 0 || s2 > 0)) {
+
             aCard.style.display = "block";
 
             let h = "";
 
             [s1, s2].forEach((s, i) => {
-                if (s > 0) {
-                    const diff = s - buy;
-                    const pct = ((diff/buy)*100).toFixed(2);
-                    const color = diff >= 0 ? "var(--green)" : "var(--red)";
-                    const cash = !isNaN(prin)
-                        ? (diff/buy * prin).toLocaleString(undefined, {minimumFractionDigits:2})
-                        : null;
 
-                    h += `<div class="stat-line">
-                            <span style="color:var(--text-sub); font-size:0.75rem;">SELL ${i+1}</span>
-                            <span style="color:${color}">${pct}%</span>
-                            <span>${cash ? '$'+cash : ''}</span>
-                          </div>`;
+                if (s > 0) {
+
+                    const diff = s - buy;
+
+                    const pct =
+                        ((diff / buy) * 100).toFixed(2);
+
+                    const color =
+                        diff >= 0
+                            ? "var(--green)"
+                            : "var(--red)";
+
+                    const cash =
+                        (diff / buy) * prin;
+
+                    h += `
+                        <div class="stat-line">
+
+                            <span
+                                style="
+                                    color:var(--text-sub);
+                                    font-size:0.75rem;
+                                ">
+
+                                SELL ${i + 1}
+
+                            </span>
+
+                            <span style="color:${color}">
+                                ${pct}%
+                            </span>
+
+                            <span style="color:${color}">
+                                ${formatMoney(cash)}
+                            </span>
+
+                        </div>
+                    `;
                 }
+
             });
 
             sBox.innerHTML = h;
 
+            /*
+            ==========================================
+            RISK / REWARD
+            ==========================================
+            */
+
             if (s1 > 0 && s2 > 0) {
-                const hi = Math.max(s1, s2), lo = Math.min(s1, s2);
+
+                const hi = Math.max(s1, s2);
+                const lo = Math.min(s1, s2);
+
                 if (hi > buy && lo < buy) {
-                    rrBox.innerHTML =
-                        `<div class="rr-badge">RISK/REWARD 1 : ${((hi-buy)/(buy-lo)).toFixed(2)}</div>`;
+
+                    rrBox.innerHTML = `
+                        <div class="rr-badge">
+
+                            RISK / REWARD
+                            1 : ${(
+                                (hi - buy) /
+                                (buy - lo)
+                            ).toFixed(2)}
+
+                        </div>
+                    `;
+
                 } else {
+
                     rrBox.innerHTML = "";
+
                 }
+
             } else {
+
                 rrBox.innerHTML = "";
+
             }
 
         } else {
+
             aCard.style.display = "none";
+
         }
+
     }
 
+    /*
+    ==========================================
+    APPLY %
+    ==========================================
+    */
+
     function applyPct(pct) {
-        const buy = parseFloat(document.getElementById('buy').value);
+
+        const buy =
+            parseFloat(document.getElementById('buy').value);
+
         if (!buy) return;
 
-        const value = (buy * (1 + pct / 100)).toFixed(2);
+        const value =
+            (buy * (1 + pct / 100)).toFixed(2);
 
         if (pct < 0) {
-            document.getElementById('s1').value = value;
-        } else {
+
             document.getElementById('s2').value = value;
+
+        } else {
+
+            document.getElementById('s1').value = value;
+
         }
 
         run();
+
     }
 
+    /*
+    ==========================================
+    CLEAR
+    ==========================================
+    */
+
     function clearInputs() {
+
         document.getElementById('buy').value = '';
         document.getElementById('s1').value = '';
         document.getElementById('s2').value = '';
         document.getElementById('prin').value = '3000';
+
         run();
+
     }
+
+    run();
+
 </script>
 
 </body>
